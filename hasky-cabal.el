@@ -165,7 +165,9 @@ This is used by `hasky-cabal--prepare'."
      hasky-cabal--project-targets
      (append
       ;; library
-      (mapcar (lambda (_) (format "%s:lib" hasky-cabal--project-name))
+      (mapcar (lambda (_) (format "%s:lib:%s"
+                                  hasky-cabal--project-name
+                                  hasky-cabal--project-name))
               (hasky-cabal--all-matches
                "^[[:blank:]]*library[[:blank:]]*"))
       ;; executables
@@ -462,11 +464,13 @@ This uses `compile' internally."
                      "Auto target")))
   :switches '((?d "Dry run"           "--dry-run")
               (?p "Enable profiling"  "--enable-profiling")
-              (?t "Enable tests"      "--enable-tests")
+              (?s "Enable tests"      "--enable-tests")
               (?b "Enable benchmarks" "--enable-benchmarks"))
-  :options  '((?f "Flags"         "--flags=")
-              (?c "Constraint" "--constraint="))
-  :actions  '((?b "Build"   hasky-cabal-build))
+  :options  '((?f "Flags"             "--flags=")
+              (?c "Constraint"        "--constraint="))
+  :actions  '((?b "Build"             hasky-cabal-build)
+              (?e "Bench"             hasky-cabal-bench)
+              (?t "Test"              hasky-cabal-test))
   :default-action 'hasky-cabal-build)
 
 (defun hasky-cabal-build (target &optional args)
@@ -481,6 +485,34 @@ This uses `compile' internally."
    "new-build"
    target
    args))
+
+(defun hasky-cabal-bench (target &optional args)
+  "Execute \"cabal new-build\" command for TARGET with ARGS."
+  (interactive
+   (list (hasky-cabal--select-target "Bench target: ")
+         (hasky-cabal-build-arguments)))
+  (apply
+   #'hasky-cabal--exec-command
+   hasky-cabal--project-name
+   hasky-cabal--last-directory
+   "new-bench"
+   target
+   args))
+
+(defun hasky-cabal-test (target &optional args)
+  "Execute \"cabal new-build\" command for TARGET with ARGS."
+  (interactive
+   (list (hasky-cabal--select-target "Test target: ")
+         (hasky-cabal-build-arguments)))
+  (apply
+   #'hasky-cabal--exec-command
+   hasky-cabal--project-name
+   hasky-cabal--last-directory
+   "new-test"
+   target
+   args))
+
+;;;; haddock popup
 
 (magit-define-popup hasky-cabal-root-popup
   "Show root popup with all supported commands."
@@ -503,9 +535,9 @@ This uses `compile' internally."
               ;; (?p "Upload"  hasky-cabal-upload-popup)
               ;; (?d "SDist"   hasky-cabal-sdist-popup)
               ;; (?x "Exec"    hasky-cabal-exec)
-              ;; (?c "Clean"   hasky-cabal-clean-popup)
+              (?c "Clean"   hasky-cabal-clean)
               (?l "Edit Cabal file" hasky-cabal-edit-cabal))
-  :default-action 'hasky-stack-build-popup
+  :default-action 'hasky-cabal-build-popup
   :max-action-columns 3)
 
 (defun hasky-cabal-update ()
@@ -516,7 +548,13 @@ This uses `compile' internally."
    hasky-cabal--last-directory
    "update"))
 
-(defun hasky-stack-edit-cabal ()
+(defun hasky-cabal-clean ()
+  "Execute a command that deletes the \"dist-newstyle\" directory."
+  (interactive)
+  (let ((default-directory hasky-cabal--last-directory))
+    (compile "rm -rvf dist-newstyle"))) ;; FIXME temporary hack
+
+(defun hasky-cabal-edit-cabal ()
   "Open Cabal file of current project for editing."
   (interactive)
   (let ((cabal-file
