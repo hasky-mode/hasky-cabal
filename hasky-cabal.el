@@ -1,6 +1,6 @@
 ;;; hasky-cabal.el --- Interface to the Cabal package manager -*- lexical-binding: t; -*-
 ;;
-;; Copyright © 2018 Mark Karpov <markkarpov92@gmail.com>
+;; Copyright © 2018–2019 Mark Karpov <markkarpov92@gmail.com>
 ;;
 ;; Author: Mark Karpov <markkarpov92@gmail.com>
 ;; URL: https://github.com/hasky-mode/hasky-cabal

@@ -56,6 +56,6 @@ customize-group hasky-cabal</kbd>.
 
 ## License
 
-Copyright © 2018 Mark Karpov
+Copyright © 2018–2019 Mark Karpov
 
 Distributed under GNU GPL, version 3.
